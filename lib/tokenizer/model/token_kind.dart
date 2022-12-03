@@ -1,12 +1,31 @@
 enum TokenKind {
-  iop(['+', '-']),
-  bop(['=', '<', '>']),
-  integer(null),
-  boolean(['true', 'false']),
-  variable(null),
-  control([':=', ';', 'skip', 'if', 'then', 'else', 'while', 'do']);
+  iop(
+    ['+', '-'],
+    r'[+-]',
+  ),
+  bop(
+    ['=', '<', '>'],
+    r'[=><]',
+  ),
+  integer(
+    null,
+    r'[+-]?\d+',
+  ),
+  boolean(
+    ['true', 'false'],
+    r'(true)|(false)',
+  ),
+  variable(
+    null,
+    r'[a-zA-Z][0-9a-zA-Z]*',
+  ),
+  control(
+    [':=', ';', 'skip', 'if', 'then', 'else', 'while', 'do'],
+    r'(:=)|(;)(skip)(if)(then)(else)(while)(do)',
+  );
 
-  const TokenKind(this.words);
+  const TokenKind(this.words, this.pattern);
 
   final List<String>? words;
+  final String pattern;
 }

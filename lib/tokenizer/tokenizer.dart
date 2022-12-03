@@ -3,50 +3,34 @@ import 'package:dart_imp_interpreter/tokenizer/model/token_kind.dart';
 import 'package:dart_imp_interpreter/tokenizer/model/tokenize_result.dart';
 
 List<Token> tokenize({required String rawInput}) {
-  final result = tryGetBoolImmediate(input: rawInput);
+  final result = getToken(input: rawInput, targetKind: TokenKind.boolean);
 
   print('');
   print(
-      'result. processedString: ${result.processedString}, token: ${result.token}');
+    'result. processedString: ${result.processedString}, token: ${result.token}',
+  );
 
   return [];
 }
 
 /// 文字列から整数トークンを切り出そうとする関数
-TokenizeResult tryGetIntegerImmediate({required String input}) {
-  final initialIntegerPattern = RegExp(r'\d+');
-  final matched = initialIntegerPattern.firstMatch(input);
+TokenizeResult getToken({
+  required String input,
+  required TokenKind targetKind,
+}) {
+  final matched = RegExp(targetKind.pattern).firstMatch(input);
 
   // 見つからない場合
   if (matched == null) {
-    print('no integer match for input');
+    print('no match for input');
     return TokenizeResult(success: false, processedString: input);
   }
 
   // 見つかったら
-  print('matched int : ${matched.group(0)}');
+  print('matched : ${matched.group(0)}');
   return TokenizeResult(
     success: true,
     processedString: input.substring(matched.group(0)?.length ?? 0),
-    token: Token(tokenKind: TokenKind.integer, value: matched.group(0) ?? ''),
-  );
-}
-
-TokenizeResult tryGetBoolImmediate({required String input}) {
-  final booleanLiteralPattern = RegExp(r'(true)|(false)');
-  final matched = booleanLiteralPattern.firstMatch(input);
-
-  // 見つからない場合
-  if (matched == null) {
-    print('no boolean literal match for input');
-    return TokenizeResult(success: false, processedString: input);
-  }
-
-  // 見つかった場合
-  print('matched boolean literal: ${matched.group(0)}');
-  return TokenizeResult(
-    success: true,
-    processedString: input.substring(matched.group(0)?.length ?? 0),
-    token: Token(tokenKind: TokenKind.integer, value: matched.group(0) ?? ''),
+    token: Token(tokenKind: targetKind, value: matched.group(0) ?? ''),
   );
 }
