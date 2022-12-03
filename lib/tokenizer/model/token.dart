@@ -5,4 +5,9 @@ class Token {
 
   final TokenKind tokenKind;
   final String value;
+
+  @override
+  String toString() {
+    return 'Token(kind: $tokenKind, value: $value)';
+  }
 }
