@@ -28,13 +28,12 @@ List<Token> tokenize({required String rawInput}) {
     }
   }
 
-  print('');
-  print('result:');
-  for (final token in tokens) {
-    print('$token');
+  // untokenizedInputが空文字じゃないのにここにたどり着いているのはトークナイズに失敗したということ。
+  if (untokenizedInput.isEmpty) {
+    throw Exception('トークン化に失敗');
   }
 
-  return [];
+  return tokens;
 }
 
 /// 文字列から整数トークンを切り出そうとする関数
@@ -55,7 +54,7 @@ TokenizeResult getToken({
   final removeMatchedInput = input.substring(matched.group(0)?.length ?? 0);
   return TokenizeResult(
     success: true,
-    processedString: removeMatchedInput.trimLeft(),
+    processedString: removeMatchedInput.trimLeft(), // 左端の空白を消す
     token: Token(tokenKind: targetKind, value: matched.group(0) ?? ''),
   );
 }
