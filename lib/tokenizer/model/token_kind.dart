@@ -15,10 +15,10 @@ enum TokenKind {
     ['true', 'false'],
     r'(true)|(false)',
   ),
-  variable(
-    null,
-    r'[a-zA-Z][0-9a-zA-Z]*',
-  ),
+  // variable(
+  //   null,
+  //   r'[a-zA-Z][0-9a-zA-Z]*',
+  // ),
   control(
     [':=', ';', 'skip', 'if', 'then', 'else', 'while', 'do'],
     r'(:=)|(;)(skip)(if)(then)(else)(while)(do)',
