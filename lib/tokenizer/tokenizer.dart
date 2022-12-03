@@ -3,10 +3,11 @@ import 'package:dart_imp_interpreter/tokenizer/model/token_kind.dart';
 import 'package:dart_imp_interpreter/tokenizer/model/tokenize_result.dart';
 
 List<Token> tokenize({required String rawInput}) {
-  final result = tryGetIntegerImmediate(input: rawInput);
+  final result = tryGetBoolImmediate(input: rawInput);
 
   print('');
-  print('result. processedString: ${result.processedString}, token: ${result.token}');
+  print(
+      'result. processedString: ${result.processedString}, token: ${result.token}');
 
   return [];
 }
@@ -24,6 +25,25 @@ TokenizeResult tryGetIntegerImmediate({required String input}) {
 
   // 見つかったら
   print('matched int : ${matched.group(0)}');
+  return TokenizeResult(
+    success: true,
+    processedString: input.substring(matched.group(0)?.length ?? 0),
+    token: Token(tokenKind: TokenKind.integer, value: matched.group(0) ?? ''),
+  );
+}
+
+TokenizeResult tryGetBoolImmediate({required String input}) {
+  final booleanLiteralPattern = RegExp(r'(true)|(false)');
+  final matched = booleanLiteralPattern.firstMatch(input);
+
+  // 見つからない場合
+  if (matched == null) {
+    print('no boolean literal match for input');
+    return TokenizeResult(success: false, processedString: input);
+  }
+
+  // 見つかった場合
+  print('matched boolean literal: ${matched.group(0)}');
   return TokenizeResult(
     success: true,
     processedString: input.substring(matched.group(0)?.length ?? 0),
