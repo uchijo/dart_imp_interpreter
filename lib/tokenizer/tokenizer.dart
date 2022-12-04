@@ -2,6 +2,11 @@ import 'package:dart_imp_interpreter/tokenizer/model/token.dart';
 import 'package:dart_imp_interpreter/tokenizer/model/token_kind.dart';
 import 'package:dart_imp_interpreter/tokenizer/model/tokenize_result.dart';
 
+/// 入力文字列をトークンにして返す関数
+/// 
+/// 処理の流れ
+/// 1. 空白, 改行で区切る
+/// 2. 区切られた箇所で更に区切れるなら区切る（記号が含まれるとき）
 List<Token> tokenize({required String rawInput}) {
   final tokens = <Token>[];
   String untokenizedInput = rawInput;
@@ -36,7 +41,7 @@ List<Token> tokenize({required String rawInput}) {
   return tokens;
 }
 
-/// 文字列から整数トークンを切り出そうとする関数
+/// 文字列からトークンを切り出そうとする関数
 TokenizeResult getToken({
   required String input,
   required TokenKind targetKind,
