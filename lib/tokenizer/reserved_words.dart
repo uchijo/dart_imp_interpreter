@@ -20,10 +20,8 @@ final reservedSymbols = TokenKind.values.fold(
     for (final word in element.words!) {
       // 英数字のみ含むものは予約語に含まれる記号じゃない
       if (_nonReservedSymbolPattern.hasMatch(word)) {
-        print('matched: $word, skip this loop');
         continue;
       }
-      print('not continue');
       previousValue.add(word);
     }
 
