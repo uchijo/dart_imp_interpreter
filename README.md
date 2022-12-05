@@ -1,2 +1,10 @@
-A sample command-line application with an entrypoint in `bin/`, library code
-in `lib/`, and example unit test in `test/`.
+# about
+
+imp言語のインタプリタをdartで実装してます。
+
+なお、ざっくりした処理系の実装の流れを掴みたいだけなので、仕様に忠実にといった感じではないです。
+勝手に拡張する可能性も、impの仕様を一部満たさない可能性もあります。
+
+## 構成
+
+- `lib/tokenizer` 以下には字句解析周りの処理が入ってます。
