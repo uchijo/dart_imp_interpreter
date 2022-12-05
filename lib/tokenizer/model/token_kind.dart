@@ -9,7 +9,7 @@ enum TokenKind {
   ),
   integer(
     null,
-    r'[\+\-]?\d+',
+    r'\d+',
   ),
   boolean(
     ['true', 'false'],
