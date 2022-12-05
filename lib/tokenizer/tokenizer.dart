@@ -36,6 +36,39 @@ List<Token> fragmentToTokens({required String rawInput}) {
 
   for (;;) {
     lastSuccess = false;
+
+    // もう細分化できないときはここで処置。記号を含まないフラットな文字列を想定できる。
+    if (!containsReservedSymbol(stringFragment: untokenizedInput)) {
+      // 予約語でない -> 識別子のパターンとマッチしたら識別子として処理して良い。
+      if (!reservedWords.contains(untokenizedInput)) {
+        final regExp = RegExp(TokenKind.identifier.pattern);
+        final matchResult = regExp.matchAsPrefix(untokenizedInput);
+        final isIdentifier = matchResult?.group(0) == untokenizedInput;
+        if (isIdentifier) {
+          tokens.add(
+            Token(tokenKind: TokenKind.identifier, value: untokenizedInput),
+          );
+          untokenizedInput = '';
+          lastSuccess = true;
+          break;
+        }
+      }
+      // 予約語だった場合
+      bool wasReserved = false;
+      for (final tokenData in TokenKind.values) {
+        if (tokenData.words?.contains(untokenizedInput) ?? false) {
+          tokens.add(Token(tokenKind: tokenData, value: untokenizedInput));
+          untokenizedInput = '';
+          lastSuccess = true;
+          wasReserved = true;
+          break;
+        }
+      }
+      if (wasReserved) {
+        break;
+      }
+    }
+
     // 各トークンに関してループ回す
     // トークナイズできたらループ抜ける
     // 識別子はほぼ全てにマッチするので一番最後に処理しないとダメ
@@ -67,7 +100,7 @@ List<Token> fragmentToTokens({required String rawInput}) {
   return tokens;
 }
 
-/// 文字列からトークンを1個だけ切り出そうとする関数
+/// 空白なしの文字列からトークンを1個だけ切り出そうとする関数
 TokenizeResult getToken({
   required String input,
   required TokenKind targetKind,
@@ -89,7 +122,7 @@ TokenizeResult getToken({
 }
 
 /// 渡された文字列がさらに分割可能か調べる関数
-bool isDevidable({required String stringFragment}) {
+bool containsReservedSymbol({required String stringFragment}) {
   for (final symbol in reservedSymbols) {
     if (stringFragment.contains(symbol)) {
       return true;
