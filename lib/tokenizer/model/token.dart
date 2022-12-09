@@ -1,3 +1,5 @@
+import 'package:dart_imp_interpreter/extension/regexp_extension.dart';
+import 'package:dart_imp_interpreter/tokenizer/const/reserved_words.dart';
 import 'package:dart_imp_interpreter/tokenizer/model/token_kind.dart';
 
 class Token {
@@ -5,6 +7,44 @@ class Token {
 
   final TokenKind tokenKind;
   final String value;
+
+  factory Token.asReservedWord({required String input}) {
+    for (final tokenData in TokenKind.values) {
+      if (tokenData.words?.contains(input) ?? false) {
+        return Token(tokenKind: tokenData, value: input);
+      }
+    }
+
+    throw Exception('Token.asReservedWord used on non reserved word.');
+  }
+
+  factory Token.asIdentifier({required String input}) {
+    // 識別子の条件を満たしているか一応確認する。
+    final regExp = RegExp(TokenKind.identifier.pattern);
+    final isIdentifier = regExp.matchAsWhole(input);
+    if (!isIdentifier) {
+      throw Exception('Token.asIdentifier used on non identifier word.');
+    }
+
+    return Token(
+      tokenKind: TokenKind.identifier,
+      value: input,
+    );
+  }
+
+  factory Token.asInteger({required String input}) {
+    // 整数リテラルの条件を満たしているか一応確認する。
+    final regExp = RegExp(TokenKind.integer.pattern);
+    final isIdentifier = regExp.matchAsWhole(input);
+    if (!isIdentifier) {
+      throw Exception('Token.asIdentifier used on non identifier word.');
+    }
+
+    return Token(
+      tokenKind: TokenKind.integer,
+      value: input,
+    );
+  }
 
   @override
   String toString() {

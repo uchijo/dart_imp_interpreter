@@ -1,7 +1,7 @@
+import 'package:dart_imp_interpreter/tokenizer/const/reserved_words.dart';
 import 'package:dart_imp_interpreter/tokenizer/model/token.dart';
 import 'package:dart_imp_interpreter/tokenizer/model/token_kind.dart';
 import 'package:dart_imp_interpreter/tokenizer/model/tokenize_result.dart';
-import 'package:dart_imp_interpreter/tokenizer/reserved_words.dart';
 
 class CodeFragment {
   final String rawInput;
@@ -13,40 +13,22 @@ class CodeFragment {
     String untokenizedInput = rawInput;
     bool lastSuccess = false;
 
+    // もう細分化できないときはここで処置。記号を含まないフラットな文字列を想定できる。
+    if (!isDevidable()) {
+      if (isReservedWord()) {
+        // 予約語だった場合
+        return [Token.asReservedWord(input: untokenizedInput)];
+      }
+
+      if (isIntegerLiteral()) {
+        return [Token.asInteger(input: untokenizedInput)];
+      }
+
+      return [Token.asIdentifier(input: untokenizedInput)];
+    }
+
     for (;;) {
       lastSuccess = false;
-
-      // もう細分化できないときはここで処置。記号を含まないフラットな文字列を想定できる。
-      if (!containsReservedSymbol(stringFragment: untokenizedInput)) {
-        // 予約語でない -> 識別子のパターンとマッチしたら識別子として処理して良い。
-        if (!reservedWords.contains(untokenizedInput)) {
-          final regExp = RegExp(TokenKind.identifier.pattern);
-          final matchResult = regExp.matchAsPrefix(untokenizedInput);
-          final isIdentifier = matchResult?.group(0) == untokenizedInput;
-          if (isIdentifier) {
-            tokens.add(
-              Token(tokenKind: TokenKind.identifier, value: untokenizedInput),
-            );
-            untokenizedInput = '';
-            lastSuccess = true;
-            break;
-          }
-        }
-        // 予約語だった場合
-        bool wasReserved = false;
-        for (final tokenData in TokenKind.values) {
-          if (tokenData.words?.contains(untokenizedInput) ?? false) {
-            tokens.add(Token(tokenKind: tokenData, value: untokenizedInput));
-            untokenizedInput = '';
-            lastSuccess = true;
-            wasReserved = true;
-            break;
-          }
-        }
-        if (wasReserved) {
-          break;
-        }
-      }
 
       // 各トークンに関してループ回す
       // トークナイズできたらループ抜ける
@@ -79,15 +61,36 @@ class CodeFragment {
     return tokens;
   }
 
-  /// 渡された文字列がさらに分割可能か調べる関数
-  bool containsReservedSymbol({required String stringFragment}) {
-    for (final symbol in reservedSymbols) {
-      if (stringFragment.contains(symbol)) {
+  /// このCodeFragmentが予約語であるかどうか
+  bool isReservedWord() {
+    for (final word in reservedWords) {
+      if (rawInput == word) {
         return true;
       }
     }
 
     return false;
+  }
+
+  // このCodeFragmentはさらに分割できるか
+  bool isDevidable() {
+    for (final symbol in reservedSymbols) {
+      if (rawInput.contains(symbol)) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  // このCodeFragmentが整数リテラルかどうか
+  bool isIntegerLiteral() {
+    final matchResult = RegExp(TokenKind.integer.pattern).firstMatch(rawInput);
+    if (matchResult == null) {
+      return false;
+    }
+
+    return matchResult.group(0) == rawInput;
   }
 
   /// 空白なしの文字列からトークンを1個だけ切り出そうとする関数

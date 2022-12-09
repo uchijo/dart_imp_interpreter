@@ -1,4 +1,4 @@
-import 'package:dart_imp_interpreter/tokenizer/reserved_words.dart';
+import 'package:dart_imp_interpreter/tokenizer/const/reserved_words.dart';
 import 'package:dart_imp_interpreter/tokenizer/tokenizer.dart';
 
 void main(List<String> arguments) {
