@@ -143,4 +143,17 @@ void main() {
       expect(result, expected);
     },
   );
+  test(
+    '空白があったりなかったりする場合に予約語、識別子を正しく識別可能 その2',
+    () {
+      final input = 'if;ifhoge';
+      final result = tokenize(rawInput: input);
+      final expected = [
+        Token(tokenKind: TokenKind.control, value: 'if'),
+        Token(tokenKind: TokenKind.control, value: ';'),
+        Token(tokenKind: TokenKind.identifier, value: 'ifhoge'),
+      ];
+      expect(result, expected);
+    },
+  );
 }
