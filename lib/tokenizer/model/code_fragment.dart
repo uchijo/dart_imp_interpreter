@@ -1,64 +1,37 @@
 import 'package:dart_imp_interpreter/tokenizer/const/reserved_words.dart';
 import 'package:dart_imp_interpreter/tokenizer/model/token.dart';
 import 'package:dart_imp_interpreter/tokenizer/model/token_kind.dart';
-import 'package:dart_imp_interpreter/tokenizer/model/tokenize_result.dart';
 
 class CodeFragment {
   final String rawInput;
 
   const CodeFragment({required this.rawInput});
 
+  /// トークンのリストを作る関数
+  ///
+  /// 空白、改行は取り除いている。
+  /// よってここでは、記号を含む予約語だったら分割、そうじゃなかったら放置みたいな感じで良い。
   List<Token> toTokenList() {
-    final tokens = <Token>[];
-    String untokenizedInput = rawInput;
-    bool lastSuccess = false;
+    // 空文字だったら空のリストを返す
+    if (rawInput == '') {
+      return [];
+    }
 
     // もう細分化できないときはここで処置。記号を含まないフラットな文字列を想定できる。
     if (!isDevidable()) {
       if (isReservedWord()) {
         // 予約語だった場合
-        return [Token.asReservedWord(input: untokenizedInput)];
+        return [Token.asReservedWord(input: rawInput)];
       }
 
       if (isIntegerLiteral()) {
-        return [Token.asInteger(input: untokenizedInput)];
+        return [Token.asInteger(input: rawInput)];
       }
 
-      return [Token.asIdentifier(input: untokenizedInput)];
+      return [Token.asIdentifier(input: rawInput)];
     }
 
-    for (;;) {
-      lastSuccess = false;
-
-      // 各トークンに関してループ回す
-      // トークナイズできたらループ抜ける
-      // 識別子はほぼ全てにマッチするので一番最後に処理しないとダメ
-      for (final kind in (TokenKind.values
-          .where((element) => element != TokenKind.identifier)
-          .toList())
-        ..add(TokenKind.identifier)) {
-        final result = getToken(input: untokenizedInput, targetKind: kind);
-        untokenizedInput = result.processedString;
-        if (result.success) {
-          tokens.add(result.token!);
-          lastSuccess = true;
-          break;
-        }
-      }
-
-      // トークナイズに成功したのならループ続ける。
-      // そうでなければトークン化できないものが発生したか全部トークン化できたということ
-      if (!lastSuccess) {
-        break;
-      }
-    }
-
-    // untokenizedInputが空文字じゃないのにここにたどり着いているのはトークナイズに失敗したということ。
-    if (untokenizedInput.isNotEmpty) {
-      throw Exception('トークン化に失敗');
-    }
-
-    return tokens;
+    return splitReserved();
   }
 
   /// このCodeFragmentが予約語であるかどうか
@@ -73,6 +46,7 @@ class CodeFragment {
   }
 
   // このCodeFragmentはさらに分割できるか
+  // 分割可能かどうか：CodeFragmentに記号のみで構成される予約語が含まれるか否か
   bool isDevidable() {
     for (final symbol in reservedSymbols) {
       if (rawInput.contains(symbol)) {
@@ -93,24 +67,35 @@ class CodeFragment {
     return matchResult.group(0) == rawInput;
   }
 
-  /// 空白なしの文字列からトークンを1個だけ切り出そうとする関数
-  TokenizeResult getToken({
-    required String input,
-    required TokenKind targetKind,
-  }) {
-    final matched = RegExp(targetKind.pattern).matchAsPrefix(input);
+  /// 記号で構成される予約語を含む場合に、適切に分割する関数
+  List<Token> splitReserved() {
+    final tokens = <Token>[];
+    var processingInput = rawInput;
+    for (final symbol in reservedSymbols) {
+      final symbolIndex = rawInput.indexOf(symbol);
+      if (symbolIndex == -1) {
+        continue;
+      }
 
-    // 見つからない場合
-    if (matched == null) {
-      return TokenizeResult(success: false, processedString: input);
+      // 記号より前部分の処理
+      final beforeRawInput = processingInput.substring(0, symbolIndex);
+      print('before: $beforeRawInput');
+      final beforeSymbolFragment = CodeFragment(rawInput: beforeRawInput);
+      tokens.addAll(beforeSymbolFragment.toTokenList());
+      processingInput = processingInput.substring(beforeRawInput.length);
+
+      // 記号自体の処理
+      tokens.add(Token.asReservedWord(input: symbol));
+      processingInput = processingInput.substring(symbol.length);
+      print('after: $processingInput');
+
+      // 記号より後ろ部分の処理
+      final afterSymbolFragment = CodeFragment(rawInput: processingInput);
+      tokens.addAll(afterSymbolFragment.toTokenList());
+
+      break;
     }
 
-    // 見つかったら
-    final removeMatchedInput = input.substring(matched.group(0)?.length ?? 0);
-    return TokenizeResult(
-      success: true,
-      processedString: removeMatchedInput.trimLeft(), // 左端の空白を消す
-      token: Token(tokenKind: targetKind, value: matched.group(0) ?? ''),
-    );
+    return tokens;
   }
 }

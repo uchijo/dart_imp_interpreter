@@ -15,7 +15,9 @@ class Token {
       }
     }
 
-    throw Exception('Token.asReservedWord used on non reserved word.');
+    throw Exception(
+      'Token.asReservedWord used on non reserved word; input was \'$input\'',
+    );
   }
 
   factory Token.asIdentifier({required String input}) {
@@ -23,7 +25,9 @@ class Token {
     final regExp = RegExp(TokenKind.identifier.pattern);
     final isIdentifier = regExp.matchAsWhole(input);
     if (!isIdentifier) {
-      throw Exception('Token.asIdentifier used on non identifier word.');
+      throw Exception(
+        'Token.asIdentifier used on non identifier word; input was \'$input\'',
+      );
     }
 
     return Token(
@@ -37,7 +41,9 @@ class Token {
     final regExp = RegExp(TokenKind.integer.pattern);
     final isIdentifier = regExp.matchAsWhole(input);
     if (!isIdentifier) {
-      throw Exception('Token.asIdentifier used on non identifier word.');
+      throw Exception(
+        'Token.asIdentifier used on non identifier word; input was \'$input\'',
+      );
     }
 
     return Token(
